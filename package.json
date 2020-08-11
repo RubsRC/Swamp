@@ -1,0 +1,34 @@
+{
+  "name": "swamp",
+  "version": "1.0.0",
+  "description": "Swamp simulator",
+  "main": "src/swamp.js",
+  "scripts": {
+    "build": "webpack --mode=development",
+    "prod": "webpack --mode=production",
+    "lint": "eslint src/*.js --color --ext js --fix"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RubsRC/Swamp.git"
+  },
+  "author": "RubsRC",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/RubsRC/Swamp/issues"
+  },
+  "homepage": "https://github.com/RubsRC/Swamp#readme",
+  "devDependencies": {
+    "@babel/core": "*",
+    "@babel/preset-env": "*",
+    "babel-loader": "*",
+    "eslint": "*",
+    "eslint-config-standard": "*",
+    "eslint-plugin-import": "*",
+    "eslint-plugin-node": "*",
+    "eslint-plugin-promise": "*",
+    "eslint-plugin-standard": "*",
+    "webpack": "*",
+    "webpack-cli": "*"
+  }
+}
