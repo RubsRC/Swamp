@@ -13,7 +13,7 @@ module.exports = {
     extensions: ['*', '.js']
   },
   output: {
-    path: __dirname + '/dist',
+    path: `${__dirname}/dist`,
     publicPath: '/',
     filename: 'bundle.js',
     libraryTarget: 'var',
@@ -22,4 +22,4 @@ module.exports = {
   devServer: {
     contentBase: './dist'
   }
-};
+}

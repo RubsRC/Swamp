@@ -4,7 +4,7 @@
   "description": "Swamp simulator",
   "main": "src/swamp.js",
   "scripts": {
-    "build": "webpack --mode=development",
+    "build": "webpack --mode=development --watch",
     "prod": "webpack --mode=production",
     "lint": "eslint src/*.js --color --ext js --fix"
   },
