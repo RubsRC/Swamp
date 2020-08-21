@@ -1,7 +1,15 @@
+body.swamp {
+  margin:0;
+  height:100vh;
+  overflow:hidden;
+  font-family:sans-serif;
+  background-color:#070215;
+}
+
 #swamp1 {
   width: 100%;
   height: 100%;
-  color: teal;
+  color: white;
 }
 
 .swamp-comtainer canvas {
@@ -10,6 +18,7 @@
   top:0px;
   left:0px;
 }
+
 .swamp-container{
   position: relative;
   overflow: hidden;
@@ -19,4 +28,22 @@
   -khtml-user-select: none;
   -webkit-user-select: none;
   -o-user-select: none;
+}
+
+.swamp-menu-container{
+  margin-bottom: 10px;
+}
+
+.swamp-button {
+  cursor: pointer;
+  border-radius: 1px;
+  background-color: indigo;
+  padding: 5px;
+  margin: 5px;
+  float: left;
+  /* clear: both; */
+}
+
+.swamp-button-hidden{
+  display:none;
 }

@@ -145,6 +145,7 @@ export default class Frog extends LivingBeing {
   }
 
   tick () {
+    console.log('tick!')
     if (this.dying) {
       this.dying--
       this.color = [0, 0, 33]

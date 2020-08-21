@@ -4,7 +4,7 @@ export default class Ui {
   constructor (id, controller, dontload = false) {
     this.id = id
     this.controller = controller
-    this.debug = false
+    this.debug = true
     this.numFrogs = 4
     this.width = 0
     this.height = 0
@@ -15,13 +15,66 @@ export default class Ui {
     this.stats.manualfed = 0
     this.stats.autofed = 0
 
-    // const ui = this
+    const ui = this
 
     this.container = document.getElementById(id)
-    let html = ''
-    html += '<div class="swamp-stats"></div>'
-    html += '<canvas>your browser does not support the canvas element</canvas>'
+    const html = `
+    <div class="swamp-menu">
+      <div class="swamp-menu-container">
+        <div class="swamp-button swamp-pausegame">Pause Game</div>
+        <div class="swamp-button swamp-playgame swamp-button-hidden">Play Game</div>
+      </div>
+      <div class="swamp-stats"></div>
+    </div>
+    <canvas>your browser does not support the canvas element</canvas>`
     this.container.innerHTML = html
+
+    // const pauseButton = this.container.querySelector('.swamp-pausegame')
+    // pauseButton.addEventListener('click', function (e) {
+    //   ui.controller.stop()
+    //   pauseButton.classList.add('swamp-button-hidden')
+    //   const playButton = this.container.querySelector('swamp-playgame')
+    //   playButton.classList.remove('swamp-button-hidden')
+    // })
+
+    // const playButton = this.container.querySelector('.swamp-playgame')
+    // playButton.addEventListener('click', function (e) {
+    //   ui.controller.play()
+    //   playButton.classList.add('swamp-button-hidden')
+    //   const pauseButton = this.container.querySelector('swamp-pausegame')
+    //   pauseButton.classList.remove('swamp-button-hidden')
+    // })
+
+    let elements = this.container.querySelectorAll('.swamp-pausegame')
+    for (let i = 0; i < elements.length; i++) {
+      const element = elements[i]
+      element.addEventListener('click', function (e) {
+        ui.controller.stop()
+        let buttons = ui.container.querySelectorAll('.swamp-pausegame')
+        for (let l = 0; l < buttons.length; l++) {
+          buttons[l].classList.add('swamp-button-hidden')
+        }
+        buttons = ui.container.querySelectorAll('.swamp-playgame')
+        for (let l = 0; l < buttons.length; l++) {
+          buttons[l].classList.remove('swamp-button-hidden')
+        }
+      })
+    }
+    elements = this.container.querySelectorAll('.swamp-playgame')
+    for (let i = 0; i < elements.length; i++) {
+      const element = elements[i]
+      element.addEventListener('click', function (e) {
+        ui.controller.play()
+        let buttons = ui.container.querySelectorAll('.swamp-pausegame')
+        for (let l = 0; l < buttons.length; l++) {
+          buttons[l].classList.remove('swamp-button-hidden')
+        }
+        buttons = ui.container.querySelectorAll('.swamp-playgame')
+        for (let l = 0; l < buttons.length; l++) {
+          buttons[l].classList.add('swamp-button-hidden')
+        }
+      })
+    }
 
     this.container.classList.add('swamp-container')
     this.canvas = this.container.querySelector('canvas')
@@ -57,7 +110,6 @@ export default class Ui {
       this.width = newWidth
       this.height = newHeight
     }
-    console.log('canvas updated')
   }
 
   load () {
@@ -66,8 +118,10 @@ export default class Ui {
       const obj = JSON.parse(localStorage.getItem(`swampSave_${this.id}`))
       if (!obj) {
         this.defaultSwamp()
+        return
       }
       // pendiente: cargar el estado de juego guardado
+      console.log('aquí debió de cargar la partida guardada')
     } else {
       console.log('Ypur browser does not support save/load')
     }
@@ -94,22 +148,7 @@ export default class Ui {
   drawstats (fps, ticks) {
     let html = ''
     html += this.statline('Alive', this.frogs.length)
-    // html += this.statline('Deaths', this.stats.deaths)
-    // html += this.statline('Total', this.stats.deaths + this.frogs.length)
-    // html += this.statline('Food', this.foods.length)
     html += this.statlineMinMax(this.frogs, 'generation', 'Generations')
-    // html += this.statlineMinMax(this.frogs, 'size', 'Sizes')
-    // html += this.statlineMinMax(this.frogs, 'mutations', 'Number of mutations')
-    // html += this.statlineMinMax(this.frogs, 'health', 'Current health')
-    // html += this.statlineMinMax(this.frogs, 'fullhealth', 'Full health')
-    // html += this.statlineMinMax(this.frogs, 'size', 'Current size')
-    // html += this.statlineMinMax(this.frogs, 'minsize', 'Minimal size')
-    // html += this.statlineMinMax(this.frogs, 'maxsize', 'Maximal size')
-    // html += this.statlineMinMax(this.frogs, 'speed', 'Speed')
-    // html += this.statlineMinMax(this.frogs, 'mutatechance', 'Mutation chance')
-    // html += this.statlineMinMax(this.frogs, 'rotatebreak', 'Rotation slowdown')
-    // html += this.statlineMinMax(this.frogs, 'searchradius', 'Search radius')
-    // html += this.statlineMinMax(this.frogs, 'mutaterange', 'Mutation range')
     html += this.statline('Fps', fps)
     html += this.statline('Ticks', this.stats.counter)
     html += this.statline('Ticks/second', ticks)
@@ -117,7 +156,7 @@ export default class Ui {
       if (this.debugvar !== null) {
         html += this.statline('debugvar', this.debugvar)
       }
-      html += this.statline('Food Chance', this.foodchance())
+      // html += this.statline('Food Chance', this.foodchance())
       html += this.statlineMinMax(this.frogs, 'traveledlast')
     }
     this.menustats.innerHTML = html
@@ -200,7 +239,7 @@ export default class Ui {
       }
       od = d
 
-      if (savetimer + 3000 <= d) {
+      if (savetimer + 10000 <= d) {
         savetimer = d
         ui.save()
       }

@@ -16,22 +16,23 @@ export default class LivingBeing {
   }
 
   setRandomPos (nearx = null, neary = null, near = 0) {
-    const p = this.randomPos(nearx, neary, near)
+    const p = this.randompos(nearx, neary, near)
     this.x = p[0]
     this.y = p[1]
   }
 
-  randomPos (nearx = null, neary = null, near = 0) {
-    let x, y
+  randompos (nearx = null, neary = null, near = 0) {
+    let x
+    let y
     if (nearx !== null) {
-      x = this.getRandomInt(nearx - near, nearx - near)
+      x = this.getRandomInt(nearx - near, nearx + near)
     } else {
       x = Math.floor(Math.random() * this.ui.canvas.width)
     }
     if (neary !== null) {
-      y = this.getRandomInt(neary - near, neary - near)
+      y = this.getRandomInt(neary - near, neary + near)
     } else {
-      y = Math.floor(Math.random() * this.ui.canvas.width)
+      y = Math.floor(Math.random() * this.ui.canvas.height)
     }
     return [x, y]
   }
@@ -41,7 +42,7 @@ export default class LivingBeing {
   }
 
   random (max, min = 0, pow = 1) {
-    return Math.round(Math.pow(Math.random(), pow) * (max - min)) + min
+    return Math.round(Math.pow(Math.random(), pow) * (max - min) + min)
   }
 
   getRandomInt (min, max) {

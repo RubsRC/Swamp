@@ -12,5 +12,18 @@ export default class Swamp {
       this.ui.play()
     }
     this.playing = true
+    console.log('play!!')
+  }
+
+  stop () {
+    this.ui.stop = true
+    this.ui.playing = false
+    console.log('stop!!')
+  }
+
+  reset () {
+    this.stop()
+    this.ui = new Ui(this.id, true)
+    this.play()
   }
 }
