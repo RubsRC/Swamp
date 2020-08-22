@@ -6,19 +6,40 @@ export default class Frog extends LivingBeing {
     this.target = null
     this.targetangle = 300
     this.path = []
-    this.minSize = 2
+    this.minsize = 2
     this.size = 4
-    this.maxSize = 5
+    this.maxsize = 5
     this.speed = 10
-    this.fullHealth = 1500
-    this.health = this.fullHealth
+    this.fullhealth = 1500
+    this.health = this.fullhealth
+    this.wait = 0
+    this.searchradius = 100
+    this.dying = null
+    this.generation = 0
+    this.mutatechance = 3 // lower = more evolutions
+    this.mutaterange = 1 // range of evolution
+    this.mutations = 0
+    this.dyinglength = 100
+    this.traveled = 0
+    this.traveledlast = 0
+    this.rotatebreak = 1000
 
-    this.defaultColors = [
+    this.defaultcolors = [
       [0, 100, 50],
       [120, 100, 50],
       [240, 100, 50],
       [60, 100, 50]
     ]
+    this.maxh = 360
+    this.minh = 0
+    this.suph = 10
+    this.maxs = 100
+    this.mins = 25
+    this.sups = 10
+    this.maxl = 100
+    this.minl = 30
+    this.supl = 10
+    this.getRandomColor()
   }
 
   save () {
@@ -26,6 +47,62 @@ export default class Frog extends LivingBeing {
     delete obj.target
     delete obj.path
     return obj
+  }
+
+  mutate () {
+    this.x += this.size
+    this.generation += 1
+    this.fullhealth = this.mutateInt(this.fullhealth)
+    this.maxsize = this.mutateInt(this.maxsize)
+    this.minsize = this.mutateInt(this.minsize, 2)
+    this.speed = this.mutateInt(this.speed)
+    this.mutatechance = this.mutateInt(this.mutatechance)
+    this.mutaterange = this.mutateInt(this.mutaterange)
+    this.rotatebreak = this.mutateInt(this.rotatebreak)
+    this.searchradius = this.mutateInt(this.searchradius)
+    this.color = this.mutateColor(this.color)
+  }
+
+  mutateColor (color) {
+    return [
+      this.mutateInt(color[0], this.minh, this.maxh, this.suph, true),
+      this.mutateInt(color[1], this.mins, this.maxs, this.sups),
+      this.mutateInt(color[2], this.minl, this.maxl, this.supl)
+    ]
+  }
+
+  mutateInt (value, min = 1, max = 100000000000, speedup = 1, circular = false) {
+    const chance = this.mutatechance
+    const range = this.mutaterange * speedup
+    if (this.random(1, 0, chance)) {
+      this.mutations++
+      const reach = this.random(range, 0 - range, chance)
+      value += reach
+      if (circular) {
+        while (value > max) {
+          value = value - max
+        }
+        while (value < min) {
+          value = value + max
+        }
+      } else {
+        if (value < min) {
+          value = min
+          // illegal mutations are punished
+          this.fullhealth -= reach
+        }
+        if (value >= max) {
+          value = max
+          // illegal mutations are punished
+          this.fullhealth -= reach
+        }
+      }
+    }
+    return value
+  }
+
+  getRandomColor () {
+    this.color = this.defaultcolors[Math.floor(Math.random() * this.defaultcolors.length)]
   }
 
   draw () {
@@ -144,8 +221,68 @@ export default class Frog extends LivingBeing {
     }
   }
 
+  searchfood () {
+    const possiblefood = []
+    for (let e = 0; e < this.ui.foods.length; e++) {
+      const food = this.ui.foods[e]
+      if (food.name === 'Food') {
+        const distance = this.distanceTo(food)
+        if (distance <= this.searchradius) {
+          possiblefood.push([distance, e])
+        }
+      }
+    }
+    if (possiblefood.length > 0) {
+      const e = possiblefood.sort(function (a, b) {
+        if (a[0] === b[0]) {
+          return 0
+        } else {
+          return (a[0] < b[0]) ? -1 : 1
+        }
+      })[0][1]
+      const food = this.ui.foods[e]
+      this.target = food
+    } else {
+      const p = this.randompos(this.x, this.y, 50)
+      this.target = { x: p[0], y: p[1], health: 1 }
+    }
+  }
+
+  divide () {
+    this.size = Math.floor(this.size / 2)
+    const clone = Object.assign(new Frog(this.ui), this)
+    clone.mutate()
+    this.ui.frogs.push(clone)
+    this.ui.checkAchievements()
+  }
+
+  die () {
+    this.dying = this.dyinglength
+    this.ui.checkAchievements()
+  }
+
+  eat (food) {
+    food.health = 0
+    this.looseTarget()
+    if (food.name !== 'Food') {
+      // random target
+      return
+    }
+    this.health = this.fullhealth
+    this.size += 1
+    if (this.size > this.maxsize && this.size / 2 > this.minsize) {
+      this.divide()
+    }
+  }
+
+  looseTarget () {
+    this.target = 0
+    this.path = []
+    this.traveled = 0
+    this.targetangle = 0
+  }
+
   tick () {
-    console.log('tick!')
     if (this.dying) {
       this.dying--
       this.color = [0, 0, 33]
@@ -181,5 +318,16 @@ export default class Frog extends LivingBeing {
       this.searchfood()
     }
     return true
+  }
+
+  randompos (nearx = null, neary = null, near = 0) {
+    const p = super.randompos(nearx, neary, near)
+    let x = p[0]
+    let y = p[1]
+    if (x < 0) { x = 0 }
+    if (x >= this.ui.canvas.width) { x = this.ui.canvas.width - 1 }
+    if (y >= this.ui.canvas.height) { y = this.ui.canvas.height - 1 }
+    if (y < 0) { y = 0 }
+    return [x, y]
   }
 }

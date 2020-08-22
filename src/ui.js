@@ -1,4 +1,5 @@
 import Frog from './frog'
+import Food from './food'
 
 export default class Ui {
   constructor (id, controller, dontload = false) {
@@ -6,6 +7,11 @@ export default class Ui {
     this.controller = controller
     this.debug = true
     this.numFrogs = 4
+    this.foodmod = 500
+    this.feedvol = 5
+    this.feedspread = 5
+    this.tps = 100
+    this.debugvar = null
     this.width = 0
     this.height = 0
     this.mouseDown = false
@@ -28,22 +34,6 @@ export default class Ui {
     </div>
     <canvas>your browser does not support the canvas element</canvas>`
     this.container.innerHTML = html
-
-    // const pauseButton = this.container.querySelector('.swamp-pausegame')
-    // pauseButton.addEventListener('click', function (e) {
-    //   ui.controller.stop()
-    //   pauseButton.classList.add('swamp-button-hidden')
-    //   const playButton = this.container.querySelector('swamp-playgame')
-    //   playButton.classList.remove('swamp-button-hidden')
-    // })
-
-    // const playButton = this.container.querySelector('.swamp-playgame')
-    // playButton.addEventListener('click', function (e) {
-    //   ui.controller.play()
-    //   playButton.classList.add('swamp-button-hidden')
-    //   const pauseButton = this.container.querySelector('swamp-pausegame')
-    //   pauseButton.classList.remove('swamp-button-hidden')
-    // })
 
     let elements = this.container.querySelectorAll('.swamp-pausegame')
     for (let i = 0; i < elements.length; i++) {
@@ -82,7 +72,20 @@ export default class Ui {
     this.ctx = this.canvas.getContext('2d')
 
     this.frogs = []
+    this.foods = []
     this.stats.counter = 0
+    this.canvas.addEventListener('mousedown', function (event) {
+      if (ui.controller.playing) {
+        ui.mouseDown = true
+        ui.manualfeed(event.clientX, event.clientY)
+      }
+    })
+    this.canvas.addEventListener('mouseup', function (event) {
+      ui.mouseDown = false
+    })
+    this.canvas.addEventListener('mousemove', function (event) {
+      ui.manualfeed(event.clientX, event.clientY)
+    })
 
     this.updateCanvas()
     this.draw()
@@ -96,6 +99,9 @@ export default class Ui {
 
   draw () {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+    for (const e in this.foods) {
+      this.foods[e].draw()
+    }
     for (const e in this.frogs) {
       this.frogs[e].draw()
     }
@@ -136,10 +142,10 @@ export default class Ui {
     // crear los seres vivos del pantano
     for (let i = 0; i < this.numFrogs; i++) {
       const frog = new Frog(this)
-      if (frog.defaultColors[i]) {
-        frog.color = frog.defaultColors[i]
+      if (frog.defaultcolors[i]) {
+        frog.color = frog.defaultcolors[i]
         frog.health = 9999
-        frog.setRandomPos(this.width / 2, this.height / 2, 50)
+        frog.setrandompos(this.width / 2, this.height / 2, 50)
       }
       this.frogs.push(frog)
     }
@@ -156,7 +162,7 @@ export default class Ui {
       if (this.debugvar !== null) {
         html += this.statline('debugvar', this.debugvar)
       }
-      // html += this.statline('Food Chance', this.foodchance())
+      html += this.statline('Food Chance', this.foodchance())
       html += this.statlineMinMax(this.frogs, 'traveledlast')
     }
     this.menustats.innerHTML = html
@@ -199,6 +205,36 @@ export default class Ui {
         this.frogs.splice(e, 1)
       }
     }
+    for (const e in this.foods) {
+      if (!this.foods[e].tick()) {
+        this.foods.splice(e, 1)
+      }
+    }
+    if (this.stats.counter % this.foodchance() === 0 && this.stats.manualfed > 0) {
+      this.foods.push(new Food(this))
+      this.stats.autofed++
+    }
+  }
+
+  manualfeed (x, y) {
+    if (this.mouseDown) {
+      for (let i = 0; i < this.feedvol; i++) {
+        const food = new Food(this)
+        const p = food.randompos(x, y, this.feedspread)
+        food.x = p[0]
+        food.y = p[1]
+        this.foods.push(food)
+        this.stats.manualfed++
+      }
+    }
+  }
+
+  foodchance () {
+    let res = this.frogs.length
+    res += this.foods.length / 2
+    res += this.foodmod
+    if (res < 1) { res = 1 }
+    return Math.floor(res)
   }
 
   play () {

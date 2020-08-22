@@ -2,7 +2,7 @@ export default class LivingBeing {
   constructor (ui) {
     this.ui = ui
     this.color = [255, 0, 0]
-    this.setRandomPos()
+    this.setrandompos()
     this.fullHealth = 2000
     this.health = this.fullHealth
     this.size = 2
@@ -15,7 +15,7 @@ export default class LivingBeing {
     return obj
   }
 
-  setRandomPos (nearx = null, neary = null, near = 0) {
+  setrandompos (nearx = null, neary = null, near = 0) {
     const p = this.randompos(nearx, neary, near)
     this.x = p[0]
     this.y = p[1]
